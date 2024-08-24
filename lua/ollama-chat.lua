@@ -1,5 +1,6 @@
 local M = {}
 
+
 ---@class OllamaChatOptions
 ---@field default_bindings boolean
 ---@field model string
