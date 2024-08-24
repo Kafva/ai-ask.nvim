@@ -8,6 +8,7 @@ require 'ollama-chat'.setup {
     model = 'mistral:7b',
     server = 'http://localhost:11434',
     icon = '🦙',
+    historyfile = vim.fn.stdpath 'data' .. '/answers.md',
 }
 ```
 

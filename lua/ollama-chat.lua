@@ -5,6 +5,7 @@ local M = {}
 ---@field model string
 ---@field server string
 ---@field icon string
+---@field historyfile string
 
 ---@type OllamaChatOptions
 M.default_opts = {
@@ -12,6 +13,7 @@ M.default_opts = {
     model = 'mistral:7b',
     server = 'http://localhost:11434',
     icon = '🦙',
+    historyfile = vim.fn.stdpath 'data' .. '/answers.md',
 }
 
 -- Messages in the chat session
@@ -19,6 +21,33 @@ local messages = {}
 
 -- Expose the most recent question globally
 vim.g.ollama_last_question = ''
+
+---@param filepath string
+---@param content string
+---@return boolean
+local function writefile(filepath, mode, content)
+    local fd, err
+    fd, err = vim.uv.fs_open(filepath, mode, 438)
+    if not fd then
+        vim.notify(err or ('Failed to open ' .. filepath), vim.log.levels.ERROR)
+        return false
+    end
+
+    _, err = vim.uv.fs_write(fd, content)
+
+    if err then
+        vim.notify(err, vim.log.levels.ERROR)
+        return false
+    end
+
+    _, err = vim.uv.fs_close(fd)
+    if err then
+        vim.notify(err, vim.log.levels.ERROR)
+        return false
+    end
+
+    return true
+end
 
 ---@return string|nil
 local function get_last_answer()
@@ -115,11 +144,10 @@ function M.ask(prompt)
 
     icon_notify 'Ollama is thinking'
 
-    vim.notify('+ ' .. table.concat(cmd, ' '), vim.log.levels.INFO)
     vim.system(cmd, { text = true }, function(r)
         if r.code ~= 0 then
             vim.notify(
-                'command failed '
+                'curl error '
                     .. r.code
                     .. ':\n'
                     .. 'stderr: '
@@ -140,6 +168,17 @@ function M.ask(prompt)
             return
         end
 
+        -- Save response to history file
+        local current_time = os.date '%Y-%m-%d %H:%M'
+        local out = '\n\n> '
+            .. current_time
+            .. ' '
+            .. prompt
+            .. '\n\n---\n\n'
+            .. response['message']['content']
+
+        writefile(M.historyfile, 'a', out)
+        -- Save response to messages array
         table.insert(messages, response['message'])
 
         local end_time = os.time()
