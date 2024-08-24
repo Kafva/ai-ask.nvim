@@ -10,7 +10,7 @@ local M = {}
 M.default_opts = {
     default_bindings = true,
     model = 'mistral:7b',
-    server = 'http://localhost:5777',
+    server = 'http://localhost:11434',
     icon = '🦙',
 }
 
