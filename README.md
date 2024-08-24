@@ -12,6 +12,9 @@ require 'ollama-chat'.setup {
 }
 ```
 
+Note: if you are using [fidget.nvim](https://github.com/j-hui/fidget.nvim) you
+will need this [patch](patches/fidget.nvim.patch).
+
 The default configuration expects ollama to be running with the *mistral:7b*
 model locally:
 ```bash
