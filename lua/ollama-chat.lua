@@ -49,8 +49,18 @@ local function writefile(filepath, mode, content)
     return true
 end
 
+---@return string[]
+local function current_selection()
+    local start_pos = vim.api.nvim_buf_get_mark(0, '<')
+    local end_pos = vim.api.nvim_buf_get_mark(0, '>')
+    local start_row = start_pos[1] - 1
+    local end_row = end_pos[1]
+    local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row, false)
+    return lines
+end
+
 ---@return string|nil
-local function get_last_answer()
+local function last_answer()
     if #messages == 0 then
         return nil
     end
@@ -132,14 +142,22 @@ end
 
 ---@param prompt string
 function M.ask(prompt)
-    -- Add new message to the end of the list
-    table.insert(messages, { role = 'user', content = prompt })
+    -- Add (visual selection and) prompt to the end of the list
+    local content = prompt .. '\n' .. table.concat(current_selection(), '\n')
+    table.insert(messages, { role = 'user', content = content })
     local body = vim.json.encode {
         model = M.model,
         stream = false,
         messages = messages,
     }
-    local cmd = { 'curl', M.server .. '/api/chat', '-d', body }
+    local cmd = {
+        'curl',
+        '--connect-timeout',
+        '10',
+        M.server .. '/api/chat',
+        '-d',
+        body,
+    }
     local start_time = os.time()
 
     icon_notify 'Ollama is thinking'
@@ -187,26 +205,26 @@ function M.ask(prompt)
 end
 
 function M.show_answer()
-    local last_message = get_last_answer()
-    if last_message == nil then
+    local message = last_answer()
+    if message == nil then
         return
     end
 
     local width = 80
     local height = 35
     local spacing = 0
-    local text = last_message['content']
+    local text = message['content']
     local lines = prettify_answer(text, width, spacing)
     open_popover(lines, 'markdown', width, height, spacing)
 end
 
 function M.yank_to_clipboard()
-    local last_message = get_last_answer()
-    if last_message == nil then
+    local message = last_answer()
+    if message == nil then
         return
     end
     -- XXX: Highly platform and config dependent if this works
-    vim.fn.setreg('*', last_message['content'])
+    vim.fn.setreg('*', message['content'])
     icon_notify 'Ollama response copied to clipboard'
 end
 
