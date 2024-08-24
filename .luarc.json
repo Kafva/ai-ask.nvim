@@ -1,0 +1,8 @@
+{
+    "workspace.library": [
+        "/usr/share/nvim/runtime/lua/vim",
+        "/opt/nvim/share/nvim/runtime/lua/vim",
+        "../../.local/share/nvim/site/pack/paqs/start/nvim-cmp/lua"
+    ]
+}
+
