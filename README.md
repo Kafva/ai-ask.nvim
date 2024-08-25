@@ -7,13 +7,19 @@ require 'ollama-chat'.setup {
     default_bindings = true,
     model = 'mistral:7b',
     server = 'http://localhost:11434',
-    icon = '🦙',
+    status_icon = "󰄭",
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
 }
 ```
 
-Note: if you are using [fidget.nvim](https://github.com/j-hui/fidget.nvim) you
-will need this [patch](patches/fidget.nvim.patch).
+To show when a new answer is available in lualine:
+```lua
+lualine_b = {
+    ...
+    { require('ollama-chat').status }
+    ...
+}
+```
 
 The default configuration expects ollama to be running with the `mistral:7b`
 model locally

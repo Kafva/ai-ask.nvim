@@ -4,7 +4,7 @@ local M = {}
 ---@field default_bindings boolean
 ---@field model string
 ---@field server string
----@field icon string
+---@field status_icon string
 ---@field historyfile string
 
 ---@type OllamaChatOptions
@@ -12,12 +12,14 @@ M.default_opts = {
     default_bindings = true,
     model = 'mistral:7b',
     server = 'http://localhost:11434',
-    icon = '🦙',
+    status_icon = '󰄭',
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
 }
 
 -- Messages in the chat session
 local messages = {}
+local start_time, end_time
+local last_answer_viewed = false
 
 -- Expose the most recent question globally
 vim.g.ollama_last_question = ''
@@ -136,10 +138,6 @@ local function open_popover(lines, ft, width, height, spacing)
     )
 end
 
-local function icon_notify(msg)
-    vim.notify(M.icon .. ' ' .. msg, vim.log.levels.INFO)
-end
-
 ---@param prompt string
 function M.ask(prompt)
     -- Add (visual selection and) prompt to the end of the list
@@ -158,31 +156,28 @@ function M.ask(prompt)
         '-d',
         body,
     }
-    local start_time = os.time()
 
-    icon_notify 'Ollama is thinking'
+    end_time = nil
+    last_answer_viewed = false
+    start_time = os.time()
 
     vim.system(cmd, { text = true }, function(r)
         if r.code ~= 0 then
-            vim.notify(
+            error(
                 'curl error '
                     .. r.code
                     .. ':\n'
                     .. 'stderr: '
                     .. r.stderr
                     .. 'stdout: '
-                    .. r.stdout,
-                vim.log.levels.ERROR
+                    .. r.stdout
             )
             return
         end
 
         local ok, response = pcall(vim.json.decode, r.stdout)
         if not ok then
-            vim.notify(
-                "Error decoding json: '" .. r.stdout .. "'",
-                vim.log.levels.ERROR
-            )
+            error("Error decoding json: '" .. r.stdout .. "'")
             return
         end
 
@@ -199,8 +194,7 @@ function M.ask(prompt)
         -- Save response to messages array
         table.insert(messages, response['message'])
 
-        local end_time = os.time()
-        icon_notify(string.format('Done [%d sec]', end_time - start_time))
+        end_time = os.time()
     end)
 end
 
@@ -216,6 +210,7 @@ function M.show_answer()
     local text = message['content']
     local lines = prettify_answer(text, width, spacing)
     open_popover(lines, 'markdown', width, height, spacing)
+    last_answer_viewed = true
 end
 
 function M.yank_to_clipboard()
@@ -225,7 +220,25 @@ function M.yank_to_clipboard()
     end
     -- XXX: Highly platform and config dependent if this works
     vim.fn.setreg('*', message['content'])
-    icon_notify 'Ollama response copied to clipboard'
+    vim.notify('Ollama response copied to clipboard', vim.log.levels.INFO)
+end
+
+function M.status()
+    if start_time == nil then
+        return '' -- No question
+    elseif end_time == nil then
+        return '' -- In progress or failed
+    elseif last_answer() == nil then
+        return '' -- No answer available
+    elseif last_answer_viewed then
+        return '' -- Answer already viewed
+    else
+        return string.format(
+            '[%s  %d sec]',
+            M.status_icon,
+            end_time - start_time
+        )
+    end
 end
 
 ---@param user_opts OllamaChatOptions?
