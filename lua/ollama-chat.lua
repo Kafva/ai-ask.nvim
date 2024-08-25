@@ -14,6 +14,9 @@ M.default_opts = {
     server = 'http://localhost:11434',
     status_icon = '󰄭',
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
+    -- Only feed the AI with the current prompt (not the entire conversation
+    -- so far) if set to false
+    chat_with_context = true,
 }
 
 -- Messages in the chat session
@@ -142,6 +145,9 @@ end
 function M.ask(prompt)
     -- Add (visual selection and) prompt to the end of the list
     local content = prompt .. '\n' .. table.concat(current_selection(), '\n')
+    if not M.chat_with_context then
+        messages = {}
+    end
     table.insert(messages, { role = 'user', content = content })
     local body = vim.json.encode {
         model = M.model,

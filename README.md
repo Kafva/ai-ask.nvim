@@ -9,6 +9,9 @@ require 'ollama-chat'.setup {
     server = 'http://localhost:11434',
     status_icon = "󰄭",
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
+    -- Only feed the AI with the current prompt (not the entire conversation
+    -- so far) if set to false
+    chat_with_context = true
 }
 ```
 
