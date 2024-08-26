@@ -54,19 +54,6 @@ local function writefile(filepath, mode, content)
     return true
 end
 
----@return string[]
-local function current_selection()
-    if not vim.fn.mode():gmatch 'vV' then
-        return {}
-    end
-    local start_pos = vim.api.nvim_buf_get_mark(0, '<')
-    local end_pos = vim.api.nvim_buf_get_mark(0, '>')
-    local start_row = start_pos[1] - 1
-    local end_row = end_pos[1]
-    local lines = vim.api.nvim_buf_get_lines(0, start_row, end_row, false)
-    return lines
-end
-
 ---@return string|nil
 local function last_answer()
     if #messages == 0 then
@@ -146,12 +133,10 @@ end
 
 ---@param prompt string
 function M.ask(prompt)
-    -- Add (visual selection and) prompt to the end of the list
-    local content = prompt .. '\n' .. table.concat(current_selection(), '\n')
     if not M.chat_with_context then
         messages = {}
     end
-    table.insert(messages, { role = 'user', content = content })
+    table.insert(messages, { role = 'user', content = prompt })
     local body = vim.json.encode {
         model = M.model,
         stream = false,
@@ -170,6 +155,7 @@ function M.ask(prompt)
     last_answer_viewed = false
     start_time = os.time()
 
+    -- vim.notify("+ " .. table.concat(cmd, " "), vim.log.levels.INFO)
     vim.system(cmd, { text = true }, function(r)
         if r.code ~= 0 then
             error(
@@ -195,7 +181,7 @@ function M.ask(prompt)
         local out = '\n\n> '
             .. current_time
             .. ' '
-            .. content
+            .. prompt
             .. '\n\n---\n\n'
             .. response['message']['content']
 
@@ -261,7 +247,16 @@ function M.setup(user_opts)
 
     vim.api.nvim_create_user_command('OllamaAsk', function(o)
         vim.g.ollama_last_question = o.fargs[1]
-        M.ask(vim.g.ollama_last_question)
+        local prompt = o.fargs[1]
+        -- Add visual selection to the prompt if applicable
+        if o.line1 ~= nil and o.line2 ~= nil and o.range == 2 then
+            local lines =
+                vim.api.nvim_buf_get_lines(0, o.line1 - 1, o.line2, false)
+            if #lines > 0 then
+                prompt = prompt .. '\n' .. table.concat(lines, '\n')
+            end
+        end
+        M.ask(prompt)
     end, { nargs = 1, range = '%' })
 
     if M.default_bindings then
