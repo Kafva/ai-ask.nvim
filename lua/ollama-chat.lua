@@ -56,6 +56,9 @@ end
 
 ---@return string[]
 local function current_selection()
+    if not vim.fn.mode():gmatch 'vV' then
+        return {}
+    end
     local start_pos = vim.api.nvim_buf_get_mark(0, '<')
     local end_pos = vim.api.nvim_buf_get_mark(0, '>')
     local start_row = start_pos[1] - 1
@@ -192,7 +195,7 @@ function M.ask(prompt)
         local out = '\n\n> '
             .. current_time
             .. ' '
-            .. prompt
+            .. content
             .. '\n\n---\n\n'
             .. response['message']['content']
 
