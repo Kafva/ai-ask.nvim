@@ -10,8 +10,8 @@ local M = {}
 ---@type OllamaChatOptions
 M.default_opts = {
     default_bindings = true,
-    model = 'mistral:7b',
-    server = 'http://localhost:11434',
+    model = os.getenv 'OLLAMA_CHAT_MODEL' or 'mistral:7b',
+    server = os.getenv 'OLLAMA_CHAT_SERVER' or 'http://localhost:11434',
     status_icon = '󰄭',
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
     -- Only feed the AI with the current prompt (not the entire conversation
@@ -218,6 +218,27 @@ function M.yank_to_clipboard()
     vim.notify('Ollama response copied to clipboard', vim.log.levels.INFO)
 end
 
+function M.stats()
+    local width = 40
+    local height = 20
+    local spacing = 0
+    local lines = {}
+
+    table.insert(lines, '# ollama-chat.nvim ')
+    table.insert(lines, '* Model: ' .. M.model)
+    table.insert(lines, '* Server: ' .. M.server)
+    table.insert(lines, '* Messages: ' .. tostring(#messages))
+
+    if start_time ~= nil and end_time ~= nil then
+        table.insert(
+            lines,
+            string.format('* Last answer: %d sec', end_time - start_time)
+        )
+    end
+
+    open_popover(lines, 'markdown', width, height, spacing)
+end
+
 function M.status()
     if start_time == nil then
         return '' -- No question
@@ -245,6 +266,7 @@ function M.setup(user_opts)
         M[k] = v
     end
 
+    vim.api.nvim_create_user_command('OllamaStats', M.stats, {})
     vim.api.nvim_create_user_command('OllamaAsk', function(o)
         vim.g.ollama_last_question = o.fargs[1]
         local prompt = o.fargs[1]
