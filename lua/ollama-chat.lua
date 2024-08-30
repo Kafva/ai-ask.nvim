@@ -154,6 +154,7 @@ function M.ask(prompt)
     end_time = nil
     last_answer_viewed = false
     start_time = os.time()
+    vim.notify '🦙 Ollama is thinking...'
 
     -- vim.notify("+ " .. table.concat(cmd, " "), vim.log.levels.INFO)
     vim.system(cmd, { text = true }, function(r)
@@ -171,8 +172,12 @@ function M.ask(prompt)
         end
 
         local ok, response = pcall(vim.json.decode, r.stdout)
-        if not ok then
-            error("Error decoding json: '" .. r.stdout .. "'")
+        if
+            not ok
+            or response['message'] == nil
+            or response['message']['content'] == nil
+        then
+            error("Missing content from json: '" .. r.stdout .. "'")
             return
         end
 
