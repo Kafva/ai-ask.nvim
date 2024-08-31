@@ -15,7 +15,9 @@ require 'ollama-chat'.setup {
 }
 ```
 
-To show when a new answer is available in lualine:
+The plugin defines an `OllamaAsk` command to send messages, the answer can be
+viewed in a popover with `ma` (default bindings). To show when a new answer is
+available in lualine:
 ```lua
 lualine_b = {
     ...
