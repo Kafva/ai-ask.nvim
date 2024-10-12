@@ -10,7 +10,7 @@ local M = {}
 ---@type OllamaChatOptions
 M.default_opts = {
     default_bindings = true,
-    model = os.getenv 'OLLAMA_CHAT_MODEL' or 'mistral:7b',
+    model = os.getenv 'OLLAMA_CHAT_MODEL' or 'codellama',
     server = os.getenv 'OLLAMA_CHAT_SERVER' or 'http://localhost:11434',
     status_icon = '󰄭',
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
