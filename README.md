@@ -1,9 +1,13 @@
-# ollama-chat.nvim
-Simple plugin to chat with the [ollama API](https://github.com/ollama/ollama/blob/main/docs/api.md)
-from within Neovim.
+# ai-chat.nvim
+Simple plugin to chat with AI APIs from within Neovim. Support for:
+
+* [Ollama](https://github.com/ollama/ollama/blob/main/docs/api.md): Can be
+  hosted locally, a list of models can be found [here](https://ollama.com/library).
+* [Gemini](https://aistudio.google.com/): Has a true free-tier (no credit card
+  details required) but definitely does not care about your privacy.
 
 ```lua
-require 'ollama-chat'.setup {
+require 'ai-chat'.setup {
     default_bindings = true,
     model = os.getenv('OLLAMA_CHAT_MODEL') or 'codellama',
     server = os.getenv('OLLAMA_CHAT_SERVER') or 'http://localhost:11434',
@@ -15,15 +19,13 @@ require 'ollama-chat'.setup {
 }
 ```
 
-The plugin defines an `OllamaAsk` command to send messages, the answer can be
+The plugin defines an `AiAsk` command to send messages, the answer can be
 viewed in a popover with `ma` (default bindings). To show when a new answer is
 available in lualine:
 ```lua
 lualine_b = {
     ...
-    { require('ollama-chat').status }
+    { require('ai-chat').status }
     ...
 }
 ```
-
-A list of models can be found [here](https://ollama.com/library).
