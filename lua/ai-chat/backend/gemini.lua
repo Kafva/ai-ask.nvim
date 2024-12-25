@@ -6,20 +6,22 @@ local M = {}
 ---@param messages AiMessage[]
 ---@return string,table
 function M.ask_arguments(messages)
-    local key = vim.trim(os.getenv('GEMINI_API_KEY') or '')
+    local key = vim.trim(os.getenv 'GEMINI_API_KEY' or '')
     if key == '' then
-        error("Unset GEMINI_API_KEY")
+        error 'Unset GEMINI_API_KEY'
     end
 
     local text = messages[#messages].content:gsub('"', '')
-    local body = '{"contents": {"parts": [' ..
-                 '{"text": "' .. text .. '"}]' ..
-                 '}}'
+    local body = '{"contents": {"parts": ['
+        .. '{"text": "'
+        .. text
+        .. '"}]'
+        .. '}}'
 
     local args = {
         '-X',
         'POST',
-        config.gemini_url .. "?key=" .. key,
+        config.gemini_url .. '?key=' .. key,
     }
 
     return body, args
@@ -40,7 +42,7 @@ function M.decode(raw_response)
         error("Missing content from json: '" .. (raw_response or '') .. "'")
     end
 
-    for _,p in ipairs(r['candidates'][1]['content']['parts']) do
+    for _, p in ipairs(r['candidates'][1]['content']['parts']) do
         if p['text'] == nil then
             error("Missing content from json: '" .. (raw_response or '') .. "'")
         end
@@ -49,6 +51,5 @@ function M.decode(raw_response)
 
     return text
 end
-
 
 return M

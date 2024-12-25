@@ -19,11 +19,7 @@ end
 ---@return string
 function M.decode(raw_response)
     local ok, r = pcall(vim.json.decode, raw_response)
-    if
-        not ok
-        or r['message'] == nil
-        or r['message']['content'] == nil
-    then
+    if not ok or r['message'] == nil or r['message']['content'] == nil then
         error("Missing content from json: '" .. (raw_response or '') .. "'")
     end
 

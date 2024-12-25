@@ -22,7 +22,7 @@ local function get_backend()
     elseif config.backend == BackendType.GEMINI then
         return require 'ai-chat.backend.gemini'
     else
-        error("Invalid backend: " .. config.backend)
+        error('Invalid backend: ' .. config.backend)
     end
 end
 
@@ -63,14 +63,15 @@ function M.ask(prompt)
         '-d',
         body,
         curl_args,
-    }):flatten():totable()
-
+    })
+        :flatten()
+        :totable()
 
     end_time = nil
     last_answer_viewed = false
     start_time = os.time()
 
-    vim.notify("+ " .. table.concat(cmd, " "), vim.log.levels.INFO)
+    vim.notify('+ ' .. table.concat(cmd, ' '), vim.log.levels.INFO)
     vim.system(cmd, { text = true }, function(r)
         if r.code ~= 0 then
             error(
@@ -91,14 +92,16 @@ function M.ask(prompt)
         local current_time = os.date '%Y-%m-%d %H:%M'
         local out = '\n\n> '
             .. current_time
-            .. ' (' .. config.backend .. ') '
+            .. ' ('
+            .. config.backend
+            .. ') '
             .. prompt
             .. '\n\n---\n'
             .. text
 
         util.writefile(config.historyfile, 'a', out)
         -- Save response to messages array
-        table.insert(messages, {role = RoleType.ASSISTANT, content = text})
+        table.insert(messages, { role = RoleType.ASSISTANT, content = text })
 
         end_time = os.time()
     end)
@@ -159,7 +162,7 @@ function M.setup(user_opts)
         else
             config.backend = BackendType.OLLAMA
         end
-        print("Switched to: " .. config.backend)
+        print('Switched to: ' .. config.backend)
     end, {})
     vim.api.nvim_create_user_command('AiAsk', function(o)
         vim.g.last_question = o.fargs[1]

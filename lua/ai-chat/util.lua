@@ -88,5 +88,4 @@ function M.prettify_answer(text, width, spacing)
     return lines
 end
 
-
 return M
