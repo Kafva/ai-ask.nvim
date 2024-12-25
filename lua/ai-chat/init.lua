@@ -3,9 +3,6 @@ local util = require 'ai-chat.util'
 
 local M = {}
 
--- Expose the most recent question globally
-vim.g.last_question = ''
-
 -- messages in the chat session
 ---@type AiMessage[]
 local messages = {}
@@ -13,6 +10,8 @@ local messages = {}
 local start_time = nil
 ---@type number|nil
 local end_time = nil
+---@type string|nil
+local last_question = nil
 local last_answer_viewed = false
 
 ---@return AiBackend
@@ -46,6 +45,23 @@ local function last_answer(silent)
 end
 
 ---@param prompt string
+---@param text string
+local function append_to_historyfile(prompt, text)
+    local current_time = os.date '%Y-%m-%d %H:%M'
+    local out = '\n\n> '
+        .. current_time
+        .. ' ('
+        .. config.backend
+        .. ') '
+        .. prompt
+        .. '\n> '
+        .. text:gsub('^\n', '')
+        .. '\n\n---\n'
+
+    util.writefile(config.historyfile, 'a', out)
+end
+
+---@param prompt string
 function M.ask(prompt)
     if not config.ollama_chat_with_context then
         messages = {}
@@ -71,7 +87,7 @@ function M.ask(prompt)
     last_answer_viewed = false
     start_time = os.time()
 
-    vim.notify('+ ' .. table.concat(cmd, ' '), vim.log.levels.INFO)
+    -- vim.notify('+ ' .. table.concat(cmd, ' '), vim.log.levels.INFO)
     vim.system(cmd, { text = true }, function(r)
         if r.code ~= 0 then
             error(
@@ -88,18 +104,10 @@ function M.ask(prompt)
 
         local text = backend.decode(r.stdout)
 
-        -- Save response to history file
-        local current_time = os.date '%Y-%m-%d %H:%M'
-        local out = '\n\n> '
-            .. current_time
-            .. ' ('
-            .. config.backend
-            .. ') '
-            .. prompt
-            .. '\n\n---\n'
-            .. text
+        if config.historyfile ~= '' then
+            append_to_historyfile(prompt, text)
+        end
 
-        util.writefile(config.historyfile, 'a', out)
         -- Save response to messages array
         table.insert(messages, { role = RoleType.ASSISTANT, content = text })
 
@@ -149,6 +157,15 @@ function M.status()
     end
 end
 
+function M.google_last_question()
+    if last_question == nil then
+        vim.notify 'No question set'
+        return
+    end
+    local url = 'https://google.com/search?q=' .. vim.uri_encode(last_question)
+    vim.ui.open(url)
+end
+
 ---@param user_opts AiChatOptions?
 function M.setup(user_opts)
     config.setup(user_opts)
@@ -156,6 +173,7 @@ function M.setup(user_opts)
     vim.api.nvim_create_user_command('AiMessages', function()
         vim.notify(vim.inspect(messages))
     end, {})
+
     vim.api.nvim_create_user_command('AiSwitch', function()
         if config.backend == BackendType.OLLAMA then
             config.backend = BackendType.GEMINI
@@ -164,8 +182,9 @@ function M.setup(user_opts)
         end
         print('Switched to: ' .. config.backend)
     end, {})
+
     vim.api.nvim_create_user_command('AiAsk', function(o)
-        vim.g.last_question = o.fargs[1]
+        last_question = o.fargs[1]
         local prompt = o.fargs[1]
         -- Add visual selection to the prompt if applicable
         if o.line1 ~= nil and o.line2 ~= nil and o.range == 2 then
@@ -180,9 +199,11 @@ function M.setup(user_opts)
 
     if config.default_bindings then
         -- stylua: ignore start
-        vim.keymap.set({"n", "v"},  "mp", ":AiAsk ", {desc = "Ask the AI"})
-        vim.keymap.set("n",         "ma", M.show_answer, {desc = "Show AI answer"})
-        vim.keymap.set("n",         "my", M.yank_to_clipboard, {desc = "Yank AI answer"})
+        vim.keymap.set({"n", "v"}, "mp", ":AiAsk ", {desc = "Ask the AI"})
+        vim.keymap.set("n",        "ma", M.show_answer, {desc = "Show AI answer"})
+        vim.keymap.set("n",        "my", M.yank_to_clipboard, {desc = "Yank AI answer"})
+        vim.keymap.set("n",        "mf", ":GoogleAsk ", {desc = "Ask Google"})
+        vim.keymap.set("n",        "mg", M.google_last_question, {desc = "Google last question"})
         -- stylua: ignore end
     end
 end

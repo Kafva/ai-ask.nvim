@@ -17,7 +17,7 @@ M.default_opts = {
     backend = os.getenv 'AI_CHAT_BACKEND' or BackendType.OLLAMA,
     default_bindings = true,
     status_icon = '󰄭',
-    waiting_icon = '',
+    waiting_icon = '󰇘',
     -- Path to save conversation history in
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
     ollama_model = os.getenv 'OLLAMA_CHAT_MODEL' or 'codellama',

@@ -4,7 +4,7 @@ Simple plugin to chat with AI APIs from within Neovim. Support for:
 * [Ollama](https://github.com/ollama/ollama/blob/main/docs/api.md): Can be
   hosted locally, a list of models can be found [here](https://ollama.com/library).
 * [Gemini](https://aistudio.google.com/): Has a true free-tier (no credit card
-  details required) but lacks the privacy of locally hosted solution.
+  details required) but lacks the privacy of a locally hosted solution.
   `GEMINI_API_KEY` needs to be set in your environment for this backend.
 
 ```lua
@@ -23,7 +23,7 @@ See [config.lua](lua/ai-chat/config.lua) for all possible options and their defa
 
 The plugin defines an `AiAsk` command to send messages, the answer can be
 viewed in a popover with `ma` (default bindings). To show when a new answer is
-available in lualine:
+available in [lualine](https://github.com/nvim-lualine/lualine.nvim):
 ```lua
 lualine_b = {
     ...
