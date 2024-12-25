@@ -2,21 +2,30 @@ local M = {}
 
 ---@enum BackendType
 BackendType = {
-    OLLAMA = 'ai-chat.ollama',
-    GEMINI = 'ai-chat.gemini',
+    OLLAMA = 'ollama',
+    GEMINI = 'gemini',
+}
+
+---@enum RoleType
+RoleType = {
+    USER = 'user',
+    ASSISTANT = 'assistant'
 }
 
 ---@type AiChatOptions
 M.default_opts = {
     backend = os.getenv 'AI_CHAT_BACKEND' or BackendType.OLLAMA,
     default_bindings = true,
-    model = os.getenv 'OLLAMA_CHAT_MODEL' or 'codellama',
-    server = os.getenv 'OLLAMA_CHAT_SERVER' or 'http://localhost:11434',
     status_icon = '󰄭',
+    waiting_icon = '',
+    -- Path to save conversation history in
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
+    ollama_model = os.getenv 'OLLAMA_CHAT_MODEL' or 'codellama',
+    ollama_server = os.getenv 'OLLAMA_CHAT_SERVER' or 'http://localhost:11434',
     -- Only feed the AI with the current prompt (not the entire conversation
     -- so far) if set to false
-    chat_with_context = true,
+    ollama_chat_with_context = true,
+    gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 }
 
 ---@param user_opts AiChatOptions?

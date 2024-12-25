@@ -4,20 +4,22 @@ Simple plugin to chat with AI APIs from within Neovim. Support for:
 * [Ollama](https://github.com/ollama/ollama/blob/main/docs/api.md): Can be
   hosted locally, a list of models can be found [here](https://ollama.com/library).
 * [Gemini](https://aistudio.google.com/): Has a true free-tier (no credit card
-  details required) but definitely does not care about your privacy.
+  details required) but lacks the privacy of locally hosted solution.
+  `GEMINI_API_KEY` needs to be set in your environment for this backend.
 
 ```lua
 require 'ai-chat'.setup {
+    -- Override the default backend: ollama|gemini
+    backend = os.getenv 'AI_CHAT_BACKEND' or 'ollama',
+    -- Enable default keybindings
     default_bindings = true,
-    model = os.getenv('OLLAMA_CHAT_MODEL') or 'codellama',
-    server = os.getenv('OLLAMA_CHAT_SERVER') or 'http://localhost:11434',
-    status_icon = "󰄭",
+    -- Path to save conversation history in
     historyfile = vim.fn.stdpath 'data' .. '/answers.md',
-    -- Only feed the AI with the current prompt (not the entire conversation
-    -- so far) if set to false
-    chat_with_context = true
+    ollama_model = os.getenv 'OLLAMA_CHAT_MODEL' or 'codellama',
+    ollama_server = os.getenv 'OLLAMA_CHAT_SERVER' or 'http://localhost:11434',
 }
 ```
+See [config.lua](lua/ai-chat/config.lua) for all possible options and their defaults.
 
 The plugin defines an `AiAsk` command to send messages, the answer can be
 viewed in a popover with `ma` (default bindings). To show when a new answer is
