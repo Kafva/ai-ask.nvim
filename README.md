@@ -3,9 +3,10 @@ Simple plugin to chat with AI APIs from within Neovim. Support for:
 
 * [Ollama](https://github.com/ollama/ollama/blob/main/docs/api.md): Can be
   hosted locally, a list of models can be found [here](https://ollama.com/library).
-* [Gemini](https://aistudio.google.com/): Has a true free-tier (no credit card
-  details required) but lacks the privacy of a locally hosted solution.
-  `GEMINI_API_KEY` needs to be set in your environment for this backend.
+* [Gemini](https://aistudio.google.com/): Provides an API that can be accessed
+  for free (as in no credit card details required), lacks the privacy of a locally
+  hosted solution. `GEMINI_API_KEY` needs to be set in your environment for this
+  backend.
 
 ```lua
 require 'ai-chat'.setup {
