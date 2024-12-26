@@ -37,7 +37,7 @@ function M.open_popover(lines, ft, width, height, spacing)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
     vim.api.nvim_open_win(buf, true, {
-        relative = 'cursor',
+        relative = 'win',
         row = 0,
         col = 0,
         height = height,

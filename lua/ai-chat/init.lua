@@ -143,7 +143,9 @@ function M.status()
     if start_time == nil then
         return '' -- No question
     elseif end_time == nil then
-        return config.waiting_icon -- In progress or failed
+        -- In progress or failed
+        return config.waiting_icon == '' and ''
+            or '[ ' .. config.waiting_icon .. ' ]'
     elseif last_answer(true) == nil then
         return '' -- No answer available
     elseif last_answer_viewed then
