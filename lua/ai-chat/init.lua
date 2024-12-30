@@ -123,7 +123,7 @@ function M.show_answer()
 
     local width = 80
     local height = 35
-    local spacing = 0
+    local spacing = 2
     local lines = util.prettify_answer(text, width, spacing)
     util.open_popover(lines, 'markdown', width, height, spacing)
     last_answer_viewed = true
