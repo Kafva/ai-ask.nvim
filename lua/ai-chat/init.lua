@@ -129,6 +129,15 @@ function M.show_answer()
     last_answer_viewed = true
 end
 
+function M.open_historyfile()
+    if config.historyfile == '' then
+        vim.notify 'No history file set'
+        return
+    end
+    vim.cmd('edit ' .. config.historyfile)
+    vim.opt_local.modifiable = false
+end
+
 function M.yank_to_clipboard()
     local text = last_answer(false)
     if text == nil then
@@ -175,6 +184,7 @@ function M.setup(user_opts)
     vim.api.nvim_create_user_command('AiMessages', function()
         vim.notify(vim.inspect(messages))
     end, {})
+    vim.api.nvim_create_user_command('AiAnswers', M.open_historyfile, {})
 
     vim.api.nvim_create_user_command('AiSwitch', function()
         if config.backend == BackendType.OLLAMA then
@@ -203,6 +213,7 @@ function M.setup(user_opts)
         -- stylua: ignore start
         vim.keymap.set({"n", "v"}, "mp", ":AiAsk ", {desc = "Ask the AI"})
         vim.keymap.set("n",        "ma", M.show_answer, {desc = "Show AI answer"})
+        vim.keymap.set("n",        "mA", M.open_historyfile, {desc = "Open AI answers history file"})
         vim.keymap.set("n",        "my", M.yank_to_clipboard, {desc = "Yank AI answer"})
         vim.keymap.set("n",        "mf", ":GoogleAsk ", {desc = "Ask Google"})
         vim.keymap.set("n",        "mg", M.google_last_question, {desc = "Google last question"})

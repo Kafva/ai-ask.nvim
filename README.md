@@ -23,8 +23,9 @@ require 'ai-chat'.setup {
 See [config.lua](lua/ai-chat/config.lua) for all possible options and their defaults.
 
 The plugin defines an `AiAsk` command to send messages, the answer can be
-viewed in a popover with `ma` (default bindings). To show when a new answer is
-available in [lualine](https://github.com/nvim-lualine/lualine.nvim):
+viewed in a buffer with `AiAnswers` or in a popover with `ma` (default
+bindings). To show when a new answer is available in
+[lualine](https://github.com/nvim-lualine/lualine.nvim):
 ```lua
 lualine_b = {
     ...
