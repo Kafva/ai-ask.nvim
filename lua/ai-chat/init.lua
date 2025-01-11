@@ -174,7 +174,7 @@ function M.google_last_question()
         return
     end
     local url = 'https://google.com/search?q=' .. vim.uri_encode(last_question)
-    vim.ui.open(url)
+    config.open(url)
 end
 
 ---@param user_opts AiChatOptions?

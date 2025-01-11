@@ -26,6 +26,7 @@ M.default_opts = {
     -- so far) if set to false
     ollama_chat_with_context = true,
     gemini_url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+    open = vim.ui.open
 }
 
 ---@param user_opts AiChatOptions?
