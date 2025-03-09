@@ -1,15 +1,15 @@
-local config = require 'ai-chat.config'
+local config = require('ai-chat.config')
 
 local M = {}
 
 ---@param messages AiMessage[]
 ---@return string,table
 function M.ask_arguments(messages)
-    local body = vim.json.encode {
+    local body = vim.json.encode({
         model = config.ollama_model,
         stream = false,
         messages = messages,
-    }
+    })
     local args = { config.ollama_server .. '/api/chat' }
 
     return body, args

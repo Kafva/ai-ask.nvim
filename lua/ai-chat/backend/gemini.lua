@@ -1,4 +1,4 @@
-local config = require 'ai-chat.config'
+local config = require('ai-chat.config')
 
 local M = {}
 
@@ -6,9 +6,9 @@ local M = {}
 ---@param messages AiMessage[]
 ---@return string,table
 function M.ask_arguments(messages)
-    local key = vim.trim(os.getenv 'GEMINI_API_KEY' or '')
+    local key = vim.trim(os.getenv('GEMINI_API_KEY') or '')
     if key == '' then
-        error 'Unset GEMINI_API_KEY'
+        error('Unset GEMINI_API_KEY')
     end
 
     local text = messages[#messages].content:gsub('"', '')

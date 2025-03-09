@@ -1,5 +1,5 @@
-local config = require 'ai-chat.config'
-local util = require 'ai-chat.util'
+local config = require('ai-chat.config')
+local util = require('ai-chat.util')
 
 local M = {}
 
@@ -17,9 +17,9 @@ local last_answer_viewed = false
 ---@return AiBackend
 local function get_backend()
     if config.backend == BackendType.OLLAMA then
-        return require 'ai-chat.backend.ollama'
+        return require('ai-chat.backend.ollama')
     elseif config.backend == BackendType.GEMINI then
-        return require 'ai-chat.backend.gemini'
+        return require('ai-chat.backend.gemini')
     else
         error('Invalid backend: ' .. config.backend)
     end
@@ -36,7 +36,7 @@ local function last_answer(silent)
     local role = last_message.role
     if role == RoleType.USER or role == nil then
         if not silent then
-            vim.notify 'No answer available (yet)'
+            vim.notify('No answer available (yet)')
         end
         return nil
     end
@@ -47,7 +47,7 @@ end
 ---@param prompt string
 ---@param text string
 local function append_to_historyfile(prompt, text)
-    local current_time = os.date '%Y-%m-%d %H:%M'
+    local current_time = os.date('%Y-%m-%d %H:%M')
     local out = '\n\n> '
         .. current_time
         .. ' ('
@@ -131,7 +131,7 @@ end
 
 function M.open_historyfile()
     if config.historyfile == '' then
-        vim.notify 'No history file set'
+        vim.notify('No history file set')
         return
     end
     vim.cmd('edit ' .. config.historyfile)
@@ -170,7 +170,7 @@ end
 
 function M.google_last_question()
     if last_question == nil then
-        vim.notify 'No question set'
+        vim.notify('No question set')
         return
     end
     local url = 'https://google.com/search?q=' .. vim.uri_encode(last_question)
