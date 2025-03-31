@@ -25,7 +25,7 @@ M.default_opts = {
     -- Only feed the AI with the current prompt (not the entire conversation
     -- so far) if set to false
     ollama_chat_with_context = true,
-    gemini_url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+    gemini_url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
     open = vim.ui.open,
 }
 
