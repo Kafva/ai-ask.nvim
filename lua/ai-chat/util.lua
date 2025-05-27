@@ -1,30 +1,54 @@
 local M = {}
 
+-- Get a handle to a file, creates the file if it does not exist.
+---@param filepath string
+---@param mode string
+---@return file*
+function M.openfile(filepath, mode)
+    if vim.fn.filereadable(filepath) == 0 then
+        vim.fn.writefile({""}, filepath)
+    end
+
+    local file = io.open(filepath, mode)
+    if not file then
+        error('Failed to open ' .. filepath)
+    end
+    return file
+end
+
 ---@param filepath string
 ---@param content string
----@return boolean
 function M.writefile(filepath, mode, content)
     local fd, err
     fd, err = vim.uv.fs_open(filepath, mode, 438)
     if not fd then
-        vim.notify(err or ('Failed to open ' .. filepath), vim.log.levels.ERROR)
-        return false
+        error(err or ('Failed to open ' .. filepath))
     end
 
     _, err = vim.uv.fs_write(fd, content)
 
     if err then
-        vim.notify(err, vim.log.levels.ERROR)
-        return false
+        error(err)
     end
 
     _, err = vim.uv.fs_close(fd)
     if err then
-        vim.notify(err, vim.log.levels.ERROR)
-        return false
+        error(err)
+    end
+end
+
+---@param filepath string
+---@return string[]
+function M.readlines(filepath)
+    local file = M.openfile(filepath, "r")
+    local content = file:read("*a")
+
+    if not content then
+        error("Failed to read " .. filepath)
     end
 
-    return true
+    local lines = vim.split(content, "\n", {trimempty = true})
+    return lines
 end
 
 ---@param lines table<string>

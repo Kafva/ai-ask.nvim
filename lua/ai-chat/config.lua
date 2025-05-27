@@ -18,8 +18,8 @@ M.default_opts = {
     default_bindings = true,
     status_icon = '󰄭',
     waiting_icon = '',
-    -- Path to save conversation history in
-    historyfile = vim.fn.stdpath('data') .. '/answers.md',
+    -- Path to save conversation history database in
+    historydb = vim.fn.stdpath('data') .. '/history.db',
     ollama_model = os.getenv('OLLAMA_CHAT_MODEL') or 'codellama',
     ollama_server = os.getenv('OLLAMA_CHAT_SERVER') or 'http://localhost:11434',
     -- Only feed the AI with the current prompt (not the entire conversation

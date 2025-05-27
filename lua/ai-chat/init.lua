@@ -1,9 +1,10 @@
 local config = require('ai-chat.config')
 local util = require('ai-chat.util')
+local db = require('ai-chat.db')
 
 local M = {}
 
--- messages in the chat session
+-- Messages in the chat session
 ---@type AiMessage[]
 local messages = {}
 ---@type number|nil
@@ -42,23 +43,6 @@ local function last_answer(silent)
     end
 
     return last_message.content
-end
-
----@param prompt string
----@param text string
-local function append_to_historyfile(prompt, text)
-    local current_time = os.date('%Y-%m-%d %H:%M')
-    local out = '\n\n> '
-        .. current_time
-        .. ' ('
-        .. config.backend
-        .. ') '
-        .. prompt
-        .. '\n> '
-        .. text:gsub('^\n', '')
-        .. '\n\n---\n'
-
-    util.writefile(config.historyfile, 'a', out)
 end
 
 ---@param prompt string
@@ -104,9 +88,7 @@ function M.ask(prompt)
 
         local text = backend.decode(r.stdout)
 
-        if config.historyfile ~= '' then
-            append_to_historyfile(prompt, text)
-        end
+        db.append(prompt, text)
 
         -- Save response to messages array
         table.insert(messages, { role = RoleType.ASSISTANT, content = text })
@@ -115,7 +97,7 @@ function M.ask(prompt)
     end)
 end
 
-function M.show_answer()
+function M.show_answer_popover()
     local text = last_answer(false)
     if text == nil then
         return
@@ -129,12 +111,33 @@ function M.show_answer()
     last_answer_viewed = true
 end
 
-function M.open_historyfile()
-    if config.historyfile == '' then
-        vim.notify('No history file set')
+---@param text string|nil
+function M.show_answer(text)
+    if text == nil then
+        text = last_answer(false)
+    end
+    if text == nil then
         return
     end
-    vim.cmd('edit ' .. config.historyfile)
+    local lines = vim.split(text, "\n")
+
+    -- Use a tempfile to make the buffer closable without :bd!
+    vim.cmd('edit ' .. vim.fn.tempname())
+    vim.api.nvim_buf_set_lines(0, 0, 1, false, lines)
+    vim.cmd('write')
+
+    -- Make sure the tempfile is removed on exit
+    vim.api.nvim_create_autocmd("BufDelete", {
+        callback = function(event)
+            local ok = vim.fn.delete(event.file)
+            if not ok then
+                error("Failed to delete " .. event.file)
+            end
+        end,
+        buffer = vim.fn.bufnr(),
+    })
+
+    last_answer_viewed = true
     vim.opt_local.modifiable = false
 end
 
@@ -177,23 +180,48 @@ function M.google_last_question()
     config.open(url)
 end
 
+function M.search_question_history()
+    local ok, fzf_lua = pcall(require, "fzf-lua")
+    if not ok then
+        vim.notify("Failed to load fzf-lua", vim.log.levels.ERROR)
+        return
+    end
+
+    fzf_lua.fzf_exec(db.get_questions(), {
+        prompt = "Questions > ",
+        preview = function (arg)
+            local answer = db.get_answer(arg[1])
+            local r = vim.system({
+                    "bat",
+                    "--style=plain",
+                    "--color=always",
+                    "--paging=never",
+                    "--plain",
+                    "--language=markdown",
+            }, { stdin = answer }):wait()
+            if r.code ~= 0 then
+                return r.stderr
+            else
+                return r.stdout
+            end
+        end,
+        actions = {
+            ['default'] = function (arg)
+                local text = db.get_answer(arg[1])
+                require('ai-chat').show_answer(text)
+            end,
+        },
+        fzf_opts = {
+            ["--preview-window"] = 'nohidden,right,30%',
+            ["--no-sort"] = true,
+            ["--tac"] = true,
+        },
+    })
+end
+
 ---@param user_opts AiChatOptions?
 function M.setup(user_opts)
     config.setup(user_opts)
-
-    vim.api.nvim_create_user_command('AiMessages', function()
-        vim.notify(vim.inspect(messages))
-    end, {})
-    vim.api.nvim_create_user_command('AiAnswers', M.open_historyfile, {})
-
-    vim.api.nvim_create_user_command('AiSwitch', function()
-        if config.backend == BackendType.OLLAMA then
-            config.backend = BackendType.GEMINI
-        else
-            config.backend = BackendType.OLLAMA
-        end
-        print('Switched to: ' .. config.backend)
-    end, {})
 
     vim.api.nvim_create_user_command('AiAsk', function(o)
         last_question = o.fargs[1]
@@ -207,13 +235,31 @@ function M.setup(user_opts)
             end
         end
         M.ask(prompt)
-    end, { nargs = 1, range = '%' })
+    end, { desc = "Ask the AI", nargs = 1, range = '%' })
+
+    vim.api.nvim_create_user_command('AiMessages', function()
+        vim.notify(vim.inspect(messages))
+    end, {desc = "List all message objects for the current session"})
+
+    vim.api.nvim_create_user_command('AiSwitch', function()
+        if config.backend == BackendType.OLLAMA then
+            config.backend = BackendType.GEMINI
+        else
+            config.backend = BackendType.OLLAMA
+        end
+        print('Switched to: ' .. config.backend)
+    end, {desc = "Switch between AI backends"})
+
+    vim.api.nvim_create_user_command('AiClear', function()
+        db.prune(100)
+    end, {desc = "Clear history of the oldest " .. tostring(100) .. " messages"})
 
     if config.default_bindings then
         -- stylua: ignore start
         vim.keymap.set({"n", "v"}, "mp", ":AiAsk ", {desc = "Ask the AI"})
-        vim.keymap.set("n",        "ma", M.show_answer, {desc = "Show AI answer"})
-        vim.keymap.set("n",        "mA", M.open_historyfile, {desc = "Open AI answers history file"})
+        vim.keymap.set("n",        "ma", M.show_answer_popover, {desc = "Show AI answer in popover"})
+        vim.keymap.set("n",        "mA", M.show_answer, {desc = "Show AI answer"})
+        vim.keymap.set("n",        "fa", M.search_question_history, {desc = "Search for previous question"})
         vim.keymap.set("n",        "my", M.yank_to_clipboard, {desc = "Yank AI answer"})
         vim.keymap.set("n",        "mf", ":GoogleAsk ", {desc = "Ask Google"})
         vim.keymap.set("n",        "mg", M.google_last_question, {desc = "Google last question"})
