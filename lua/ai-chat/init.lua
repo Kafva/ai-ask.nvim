@@ -88,7 +88,7 @@ function M.ask(prompt)
 
         local text = backend.decode(r.stdout)
 
-        db.append(prompt, text)
+        db.append(vim.split(prompt, "\n")[1], text)
 
         -- Save response to messages array
         table.insert(messages, { role = RoleType.ASSISTANT, content = text })
