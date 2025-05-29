@@ -138,6 +138,8 @@ function M.show_answer(text)
     })
 
     last_answer_viewed = true
+
+    vim.opt_local.ft = "markdown"
     vim.opt_local.modifiable = false
 end
 
