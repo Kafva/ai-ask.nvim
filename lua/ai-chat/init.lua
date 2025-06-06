@@ -173,13 +173,17 @@ function M.status()
     end
 end
 
+function M.google_question(question)
+    local url = 'https://google.com/search?q=' .. vim.uri_encode(question)
+    config.open(url)
+end
+
 function M.google_last_question()
     if last_question == nil then
         vim.notify('No question set')
         return
     end
-    local url = 'https://google.com/search?q=' .. vim.uri_encode(last_question)
-    config.open(url)
+    M.google_question(last_question)
 end
 
 function M.search_question_history()
@@ -255,6 +259,10 @@ function M.setup(user_opts)
     vim.api.nvim_create_user_command('AiClear', function()
         db.prune(100)
     end, {desc = "Clear history of the oldest " .. tostring(100) .. " messages"})
+
+    vim.api.nvim_create_user_command("GoogleAsk", function (opts)
+        M.google_question(opts.fargs[1])
+    end, { nargs = 1 })
 
     if config.default_bindings then
         -- stylua: ignore start
