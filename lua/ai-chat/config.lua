@@ -26,6 +26,7 @@ M.default_opts = {
     -- so far) if set to false
     ollama_chat_with_context = true,
     gemini_url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    search_engine_url = 'https://google.com/search?q=',
     open = vim.ui.open,
 }
 

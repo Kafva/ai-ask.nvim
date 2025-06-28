@@ -7,6 +7,7 @@
 ---@field ollama_model string
 ---@field ollama_server string
 ---@field ollama_chat_with_context boolean
+---@field search_engine_url string
 ---@field gemini_url string
 
 ---@class AiMessage

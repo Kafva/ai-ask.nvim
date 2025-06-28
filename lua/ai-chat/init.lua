@@ -174,7 +174,7 @@ function M.status()
 end
 
 function M.google_question(question)
-    local url = 'https://google.com/search?q=' .. vim.uri_encode(question)
+    local url = config.search_engine_url .. vim.uri_encode(question)
     config.open(url)
 end
 
