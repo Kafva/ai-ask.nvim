@@ -1,4 +1,4 @@
-local config = require('ai-chat.config')
+local config = require('ai-ask.config')
 
 local M = {}
 

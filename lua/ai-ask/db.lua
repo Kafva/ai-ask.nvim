@@ -1,5 +1,5 @@
-local config = require('ai-chat.config')
-local util = require('ai-chat.util')
+local config = require('ai-ask.config')
+local util = require('ai-ask.util')
 
 local M = {}
 

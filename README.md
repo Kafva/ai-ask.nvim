@@ -1,4 +1,4 @@
-# ai-chat.nvim
+# ai-ask.nvim
 Simple plugin to chat with AI APIs from within Neovim. Support for:
 
 * [Ollama](https://github.com/ollama/ollama/blob/main/docs/api.md): Can be
@@ -12,10 +12,10 @@ The plugin defines an `AiAsk` command to send messages, the answer can be
 viewed in a temporary file with `mA` or in a popover with `ma` (default bindings).
 
 ## Configuration
-See [config.lua](lua/ai-chat/config.lua) for all possible options and their defaults.
+See [config.lua](lua/ai-ask/config.lua) for all possible options and their defaults.
 
 ```lua
-require 'ai-chat'.setup {
+require 'ai-ask'.setup {
     -- Override the default backend: ollama|gemini
     backend = os.getenv 'AI_CHAT_BACKEND' or 'ollama',
     -- Enable default keybindings
@@ -37,7 +37,7 @@ An indicator for when an answer becomes available can be shown in lualine.
 ```lua
 lualine_b = {
     ...
-    { require('ai-chat').status }
+    { require('ai-ask').status }
     ...
 }
 ```

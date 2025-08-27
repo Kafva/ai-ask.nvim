@@ -1,6 +1,6 @@
-local config = require('ai-chat.config')
-local util = require('ai-chat.util')
-local db = require('ai-chat.db')
+local config = require('ai-ask.config')
+local util = require('ai-ask.util')
+local db = require('ai-ask.db')
 
 local M = {}
 
@@ -18,9 +18,9 @@ local last_answer_viewed = false
 ---@return AiBackend
 local function get_backend()
     if config.backend == BackendType.OLLAMA then
-        return require('ai-chat.backend.ollama')
+        return require('ai-ask.backend.ollama')
     elseif config.backend == BackendType.GEMINI then
-        return require('ai-chat.backend.gemini')
+        return require('ai-ask.backend.gemini')
     else
         error('Invalid backend: ' .. config.backend)
     end
@@ -214,7 +214,7 @@ function M.search_question_history()
         actions = {
             ['default'] = function (arg)
                 local text = db.get_answer(arg[1])
-                require('ai-chat').show_answer(text)
+                require('ai-ask').show_answer(text)
             end,
         },
         fzf_opts = {
